@@ -1,0 +1,65 @@
+version: "3.9"
+x-logging:
+  &default-logging
+  driver: "json-file"
+  options:
+    max-size: "1M"
+    max-file: "10"
+services:
+  fedisearch-crawler:
+    image: skorpil/fedicrawl:latest
+    restart: always
+    build:
+      context: ./build/fedicrawl
+      target: prod
+    environment:
+      - 'POSTGRES_URL=postgresql://${FEDISEARCH_POSTGRES_USER}:${FEDISEARCH_POSTGRES_PASSWORD}@postgres:5432/${FEDISEARCH_POSTGRES_USER}?schema=public'
+      - 'SEED_NODE_DOMAIN=${FEDISEARCH_SEED}'
+      - 'TZ=${FEDISEARCH_TIMEZONE}'
+      - 'REATTEMPT_MINUTES=${FEDISEARCH_REATTEMPT_MINUTES}'
+      - 'REFRESH_HOURS=${FEDISEARCH_REFRESH_HOURS}'
+      - 'WAIT_FOR_JOB_MINUTES=${FEDISEARCH_WAIT_FOR_JOB_MINUTES}'
+      - 'DEFAULT_TIMEOUT_MILLISECONDS=${FEDISEARCH_DEFAULT_TIMEOUT_MILLISECONDS}'
+    networks:
+      fedisearch:
+    logging: *default-logging
+    depends_on:
+      - fedisearch-postgres
+
+  fedisearch-searcher:
+    image: skorpil/fedisearch:latest
+    restart: always
+    build:
+      context: ./build/fedisearch
+      target: prod
+    environment:
+      - 'POSTGRES_URL=postgresql://${FEDISEARCH_POSTGRES_USER}:${FEDISEARCH_POSTGRES_PASSWORD}@postgres:5432/${FEDISEARCH_POSTGRES_USER}?schema=public'
+      - 'MATOMO_URL=${FEDISEARCH_MATOMO_URL}'
+      - 'MATOMO_SITE_ID=${FEDISEARCH_MATOMO_SITE_ID}'
+      - 'TZ=${FEDISEARCH_TIMEZONE}'
+    networks:
+      fedisearch:
+    logging: *default-logging
+    depends_on:
+      - fedisearch-postgres
+
+  fedisearch-postgres:
+    image: postgres:14
+    restart: always
+    volumes:
+      - fedisearch-postgres-data:/var/lib/postgresql/data
+    environment:
+      - 'POSTGRES_PASSWORD=${FEDISEARCH_POSTGRES_PASSWORD}'
+      - 'POSTGRES_USER=${FEDISEARCH_POSTGRES_USER}'
+      - 'TZ=${FEDISEARCH_TIMEZONE}'
+    networks:
+      fedisearch:
+        aliases:
+          - postgres
+    logging: *default-logging
+
+networks:
+  fedisearch:
+
+volumes:
+  fedisearch-postgres-data:

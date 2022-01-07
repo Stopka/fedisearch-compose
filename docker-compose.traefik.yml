@@ -1,0 +1,15 @@
+version: "3.9"
+services:
+  fedisearch-searcher:
+    networks:
+      proxy:
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.fedisearch-searcher.rule=Host(`${FEDISEARCH_DOMAIN}`)"
+      - "traefik.http.services.fedisearch-searcher.loadbalancer.server.port=3000"
+
+networks:
+  # proxy network, where traefik is connected and where it looks for services
+  proxy:
+    external: true
+    name: proxy
