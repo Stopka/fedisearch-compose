@@ -3,7 +3,7 @@
 This an example setup for Fediverse feed crawler and searcher.
 
 Fedisearch consists of 3 app containers:
-1. **Postgres** - SQL database for storing all found feeds
+1. **Elasticsearch** - Key value storage database and fulltext search engine
 2. **Fedicrawl** - crawls through the Fediverse network and stores all found nodes and also its feeds to database
 3. **Fedisearch** - web frontend for searching data in database
 
