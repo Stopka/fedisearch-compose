@@ -1,10 +1,10 @@
 version: "3.9"
 services:
-  fedisearch-postgres:
+  fedisearch-elasticsearch:
+    environment:
+      - xpack.security.enrollment.enabled=true
     ports:
-      - 5432:5432
-    volumes:
-      - ./volumes/postgres-sql:/data
+      - 9200:9200
 
   fedisearch-crawler:
     image: skorpil/fedicrawl:dev
@@ -21,5 +21,13 @@ services:
         - 3000:3000
     volumes:
       - ./build/fedisearch/application:/srv
-volumes:
-  fedisearch-postgres-data:
+#  fedisearch-kibana:
+#    image: kibana:8.4.1
+#    environment:
+#      ELASTICSEARCH_HOSTS: '["http://elastic:${FEDISEARCH_ELASTIC_PASSWORD}@fedisearch-elasticsearch:9200"]'
+#    networks:
+#      fedisearch:
+#        aliases:
+#          - kibana
+#    ports:
+#      - 5601:5601

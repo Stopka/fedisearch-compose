@@ -13,18 +13,20 @@ services:
       context: ./build/fedicrawl
       target: prod
     environment:
-      - 'POSTGRES_URL=postgresql://${FEDISEARCH_POSTGRES_USER}:${FEDISEARCH_POSTGRES_PASSWORD}@postgres:5432/${FEDISEARCH_POSTGRES_USER}?schema=public'
       - 'SEED_NODE_DOMAIN=${FEDISEARCH_SEED}'
       - 'TZ=${FEDISEARCH_TIMEZONE}'
       - 'REATTEMPT_MINUTES=${FEDISEARCH_REATTEMPT_MINUTES}'
       - 'REFRESH_HOURS=${FEDISEARCH_REFRESH_HOURS}'
       - 'WAIT_FOR_JOB_MINUTES=${FEDISEARCH_WAIT_FOR_JOB_MINUTES}'
       - 'DEFAULT_TIMEOUT_MILLISECONDS=${FEDISEARCH_DEFAULT_TIMEOUT_MILLISECONDS}'
+      - 'ELASTIC_URL=http://elastic:9200'
+      - 'ELASTIC_PASSWORD=${FEDISEARCH_ELASTIC_PASSWORD}'
+      - 'BANNED_DOMAINS=${FEDISEARCH_BANNED_DOMAINS}'
     networks:
       fedisearch:
     logging: *default-logging
     depends_on:
-      - fedisearch-postgres
+      - fedisearch-elasticsearch
 
   fedisearch-searcher:
     image: skorpil/fedisearch:latest
@@ -33,34 +35,32 @@ services:
       context: ./build/fedisearch
       target: prod
     environment:
-      - 'POSTGRES_URL=postgresql://${FEDISEARCH_POSTGRES_USER}:${FEDISEARCH_POSTGRES_PASSWORD}@postgres:5432/${FEDISEARCH_POSTGRES_USER}?schema=public'
       - 'MATOMO_URL=${FEDISEARCH_MATOMO_URL}'
       - 'MATOMO_SITE_ID=${FEDISEARCH_MATOMO_SITE_ID}'
       - 'STATS_CACHE_MINUTES=${FEDISEARCH_STATS_CACHE_MINUTES}'
       - 'TZ=${FEDISEARCH_TIMEZONE}'
+      - 'ELASTIC_URL=http://elastic:9200'
+      - 'ELASTIC_PASSWORD=${FEDISEARCH_ELASTIC_PASSWORD}'
     networks:
       fedisearch:
     logging: *default-logging
     depends_on:
-      - fedisearch-postgres
-
-  fedisearch-postgres:
-    image: postgres:14
-    restart: always
-    volumes:
-      - fedisearch-postgres-data:/var/lib/postgresql/data
+      - fedisearch-elasticsearch
+  fedisearch-elasticsearch:
+    image: elasticsearch:8.4.1
     environment:
-      - 'POSTGRES_PASSWORD=${FEDISEARCH_POSTGRES_PASSWORD}'
-      - 'POSTGRES_USER=${FEDISEARCH_POSTGRES_USER}'
+      - discovery.type=single-node
+      - ELASTIC_PASSWORD=${FEDISEARCH_ELASTIC_PASSWORD}
       - 'TZ=${FEDISEARCH_TIMEZONE}'
+    volumes:
+      - fedisearch-elasticsearch-data:/usr/share/elasticsearch/data
     networks:
       fedisearch:
         aliases:
-          - postgres
-    logging: *default-logging
+          - elastic
 
 networks:
   fedisearch:
 
 volumes:
-  fedisearch-postgres-data:
+  fedisearch-elasticsearch-data:
