@@ -6,6 +6,15 @@ services:
     ports:
       - 9200:9200
 
+  fedisearch-storage:
+    image: skorpil/fedistore:dev
+    build:
+      target: dev
+    ports:
+      - 4000:3000
+    volumes:
+      - ./build/fedistore/application:/srv
+
   fedisearch-crawler:
     image: skorpil/fedicrawl:dev
     build:

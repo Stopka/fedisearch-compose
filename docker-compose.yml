@@ -6,6 +6,21 @@ x-logging:
     max-size: "1M"
     max-file: "10"
 services:
+  fedisearch-storage:
+    image: skorpil/fedistore:latest
+    build:
+      context: ./build/fedistore
+      target: prod
+    volumes:
+      - ./build/fedistore/application:/srv
+    environment:
+      - 'ELASTIC_URL=http://elastic:9200'
+      - 'ELASTIC_PASSWORD=${FEDISEARCH_ELASTIC_PASSWORD}'
+    networks:
+      fedisearch:
+    logging: *default-logging
+    depends_on:
+      - fedisearch-elasticsearch
   fedisearch-crawler:
     image: skorpil/fedicrawl:latest
     restart: always
@@ -26,7 +41,7 @@ services:
       fedisearch:
     logging: *default-logging
     depends_on:
-      - fedisearch-elasticsearch
+      - fedisearch-storage
 
   fedisearch-searcher:
     image: skorpil/fedisearch:latest
@@ -45,7 +60,7 @@ services:
       fedisearch:
     logging: *default-logging
     depends_on:
-      - fedisearch-elasticsearch
+      - fedisearch-storage
   fedisearch-elasticsearch:
     image: elasticsearch:8.4.1
     environment:
