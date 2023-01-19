@@ -16,6 +16,8 @@ services:
     environment:
       - 'ELASTIC_URL=http://elastic:9200'
       - 'ELASTIC_PASSWORD=${FEDISEARCH_ELASTIC_PASSWORD}'
+      - 'ACCESS_WRITE=${FEDISEARCH_KEY_CRAWLER},${FEDISEARCH_KEY_ADMIN}'
+      - 'CORS_ALLOWED_ORIGINS=${FEDISEARCH_CORS_ALLOWED_ORIGINS}'
     networks:
       fedisearch:
     logging: *default-logging
@@ -40,6 +42,7 @@ services:
       - 'BANNED_DOMAINS=${FEDISEARCH_BANNED_DOMAINS}'
       - 'MAX_CRAWLING_DEPTH=${FEDISEARCH_MAX_CRAWLING_DEPTH}'
       - 'CRAWLING_VERSION=${FEDISEARCH_CRAWLING_VERSION}'
+      - 'STORE_KEY=${FEDISEARCH_KEY_CRAWLER}'
     networks:
       fedisearch:
     logging: *default-logging

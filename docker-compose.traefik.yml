@@ -5,8 +5,8 @@ services:
       proxy:
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.fedisearch-searcher.rule=Host(`${FEDISEARCH_DOMAIN}`)&Path(`/api/graphql`)"
-      - "traefik.http.services.fedisearch-searcher.loadbalancer.server.port=3000"
+      - "traefik.http.routers.fedisearch-storage.rule=Host(`${FEDISEARCH_DOMAIN}`)&&Path(`/api/graphql`)"
+      - "traefik.http.services.fedisearch-storage.ladbalancer.server.port=3000"
   fedisearch-searcher:
     networks:
       proxy:
