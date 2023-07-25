@@ -1,17 +1,20 @@
 version: "3.9"
 services:
   fedisearch-elasticsearch:
-    environment:
-      - xpack.security.enrollment.enabled=true
-    ports:
-      - 9200:9200
-
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.fedisearch-elastic.rule=Host(`elastic.${FEDISEARCH_DOMAIN}`)"
+      - "traefik.http.routers.fedisearch-elastic.entrypoints=https"
+      - "traefik.http.routers.fedisearch-elastic.tls=true"
+      - "traefik.http.routers.fedisearch-elastic.tls.certresolver=local"
+      - "traefik.http.routers.fedisearch-elastic.tls.domains[0].main=elastic.${FEDISEARCH_DOMAIN}"
+      - "traefik.http.services.fedisearch-elasticsearch.loadbalancer.server.port=9200"
   fedisearch-storage:
     image: skorpil/fedistore:dev
     build:
       target: dev
-    ports:
-      - 4000:3000
+    labels:
+      - "traefik.http.routers.fedisearch-storage.tls.certresolver=local"
     volumes:
       - ./build/fedistore/application:/srv
 
@@ -26,17 +29,8 @@ services:
     image: skorpil/fedisearch:dev
     build:
       target: dev
-    ports:
-        - 3000:3000
+    labels:
+      - "traefik.http.routers.fedisearch-searcher.tls.certresolver=local"
     volumes:
       - ./build/fedisearch/application:/srv
-#  fedisearch-kibana:
-#    image: kibana:8.4.1
-#    environment:
-#      ELASTICSEARCH_HOSTS: '["http://elastic:${FEDISEARCH_ELASTIC_PASSWORD}@fedisearch-elasticsearch:9200"]'
-#    networks:
-#      fedisearch:
-#        aliases:
-#          - kibana
-#    ports:
-#      - 5601:5601
+
